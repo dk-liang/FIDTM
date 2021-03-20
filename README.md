@@ -81,7 +81,7 @@ We choose two thresholds (4, 8) for evaluation. The evaluation code is from [NWP
 # Training
 
 The official training code is coming soon. 
-Also, the training strategy is simple. You can replace the density map with the FIDT map in any regressors for training.
+Also, the training strategy is very simple. You can replace the density map with the FIDT map in any regressors for training.
 
 
 

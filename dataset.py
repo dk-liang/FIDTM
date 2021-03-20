@@ -29,26 +29,23 @@ class listDataset(Dataset):
     def __getitem__(self, index):
         assert index <= len(self), 'index range error'
 
-        if self.args['preload'] == True:
+        if self.args['preload_data'] == True:
             fname = self.lines[index]['fname']
             img = self.lines[index]['img']
             kpoint = self.lines[index]['kpoint']
-            rdt_map = self.lines[index]['rdt_map']
-            mask_map = self.lines[index]['mask_map']
+            fidt_map = self.lines[index]['fidt_map']
 
         else:
             img_path = self.lines[index]
             fname = os.path.basename(img_path)
-            img, rdt_map, kpoint,mask_map = load_data_fidt(img_path, self.args, self.train)
+            img, fidt_map, kpoint = load_data_fidt(img_path, self.args, self.train)
 
         '''data augmention'''
         if self.train == True:
             if random.random() > 0.5:
-                rdt_map = np.fliplr(rdt_map)
+                fidt_map = np.fliplr(fidt_map)
                 img = img.transpose(Image.FLIP_LEFT_RIGHT)
-                mask_map = np.fliplr(mask_map)
                 kpoint = np.fliplr(kpoint)
-
 
             if random.random() > self.args['random_noise']:
                 proportion = random.uniform(0.004, 0.015)
@@ -61,17 +58,18 @@ class listDataset(Dataset):
                         img.putpixel((w, h), (0, 0, 0))
                     else:
                         img.putpixel((w, h), (255, 255, 255))
+                        
 
-        rdt_map = rdt_map.copy()
+        fidt_map = fidt_map.copy()
         kpoint = kpoint.copy()
         img = img.copy()
-        mask_map = mask_map.copy()
 
         if self.transform is not None:
             img = self.transform(img)
 
+        '''crop size'''
         if self.train == True:
-            rdt_map = torch.from_numpy(rdt_map).cuda()
+            fidt_map = torch.from_numpy(fidt_map).cuda()
 
             width = 256
             height = 256
@@ -80,9 +78,9 @@ class listDataset(Dataset):
             crop_size_y = random.randint(0, img.shape[2] - height)
             img = img[:, crop_size_x: crop_size_x + width, crop_size_y:crop_size_y + height]
             kpoint = kpoint[crop_size_x: crop_size_x + width, crop_size_y:crop_size_y + height]
-            rdt_map = rdt_map[crop_size_x: crop_size_x + width, crop_size_y:crop_size_y + height]
-            mask_map = mask_map[crop_size_x: crop_size_x + width, crop_size_y:crop_size_y + height]
+            fidt_map = fidt_map[crop_size_x: crop_size_x + width, crop_size_y:crop_size_y + height]
 
 
-        return fname, img, rdt_map, kpoint, mask_map
+
+        return fname, img, fidt_map, kpoint
 

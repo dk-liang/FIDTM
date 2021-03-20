@@ -2,6 +2,7 @@
 # Focal Inverse Distance Transform Map
 * An officical implementation of Focal Inverse Distance Transform Map. We propose a novel map named Focal Inverse Distance Transform (FIDT) map,  which can represent each head location information.
 
+* Paper [Link](https://arxiv.org/abs/2102.07925)
 ## Overview
 ![avatar](./image/overview.png)
 
@@ -16,14 +17,14 @@
 
 # Environment
 
-python >=3.6
-pytorch >=1.4
-opencv-python >=4.0
-scipy >=1.4.0
-h5py >=2.10
-pillow >=7.0.0
-imageio >=1.18
-nni >=2.0 (python3 -m pip install --upgrade nni)
+	python >=3.6 
+	pytorch >=1.4
+	opencv-python >=4.0
+	scipy >=1.4.0
+	h5py >=2.10
+	pillow >=7.0.0
+	imageio >=1.18
+	nni >=2.0 (python3 -m pip install --upgrade nni)
 
 # Datasets
 
@@ -36,10 +37,10 @@ nni >=2.0 (python3 -m pip install --upgrade nni)
 
 ```
 cd data
-python fidt_generate_xx.py
+run  python fidt_generate_xx.py
 ```
 
-“xx” means the dataset name, including sh, jhu, qnrf, and nwpu.
+“xx” means the dataset name, including sh, jhu, qnrf, and nwpu. You should change the dataset path.
 
 # Model
 
@@ -47,22 +48,34 @@ Download the pretrained model from [Baidu-Disk](https://pan.baidu.com/s/1SaPppYr
 
 # Quickly test
 
-- `git clone https://github.com/dk-liang/FIDTM.git`
-  `cd AutoScale`
-- Download Dataset and Model
-- Generate FIDT map ground-truth
-- Generate images list (run `python make_npydata.py`)
+```
+git clone https://github.com/dk-liang/FIDTM.git
+```
 
-- Test
-  `python val.py --test_dataset ShanghaiA --pre ./model/ShanghaiA/model_best.pth --gpu_id 0`
-  `python val.py --test_dataset ShanghaiB --pre ./model/ShanghaiB/model_best.pth --gpu_id 0`
-  More config information is provided in `config.py`
+Download Dataset and Model
+
+Generate FIDT map ground-truth
+	
+```
+run python make_npydata.py
+```
+
+Test example:
+```
+python test.py --test_dataset ShanghaiA --pre ./model/ShanghaiA/model_best.pth --gpu_id 0
+python test.py --test_dataset ShanghaiB --pre ./model/ShanghaiB/model_best.pth --gpu_id 0
+```
+More config information is provided in config.py
 # Evaluation localization performance
-  `cd ./local_eval
-  python A_gt_generate.py 
-  python eval.py`
-
-  We choose two thresholds (4, 8) for evaluation. 
+```
+cd ./local_eval
+```
+Generate coordinates of Ground truth. (Remember to change the dataset path)
+```
+python A_gt_generate.py 
+python eval.py
+```
+We choose two thresholds (4, 8) for evaluation. The evaluation code is from [NWPU](https://github.com/gjy3035/NWPU-Crowd-Sample-Code)
 
 
 # Training

@@ -24,7 +24,6 @@ logger = logging.getLogger('mnist_AutoML')
 
 
 def main(args):
-
     if args['test_dataset'] == 'ShanghaiA':
         test_file = './npydata/ShanghaiA_test.npy'
     elif args['test_dataset'] == 'ShanghaiB':
@@ -36,26 +35,22 @@ def main(args):
     elif args['test_dataset'] == 'NWPU':
         test_file = './npydata/nwpu_val.npy'
 
-
     with open(test_file, 'rb') as outfile:
         val_list = np.load(outfile).tolist()
-
 
     model = get_seg_model()
     model = nn.DataParallel(model, device_ids=[0])
     model = model.cuda()
 
-
     optimizer = torch.optim.Adam(
-        [  #
+        [
             {'params': model.parameters(), 'lr': args['lr']},
-        ], lr=args['lr'], weight_decay=args['weight_decay'])
+        ])
 
     print(args['pre'])
 
     if not os.path.exists(args['task_id']):
         os.makedirs(args['task_id'])
-
 
     if args['pre']:
         if os.path.isfile(args['pre']):
@@ -68,28 +63,26 @@ def main(args):
             print("=> no checkpoint found at '{}'".format(args['pre']))
 
     torch.set_num_threads(args['workers'])
-
     print(args['best_pred'], args['start_epoch'])
 
-    test_data = pre_data(val_list, args, train=False)
+    if args['preload_data'] == True:
+        test_data = pre_data(val_list, args, train=False)
+    else:
+        test_data = val_list
 
-    for epoch in range(args['start_epoch'], args['epochs']):
+    '''inference '''
+    prec1, visi = validate(test_data, model, args)
 
-        prec1, visi = validate(test_data, model, args)
+    is_best = prec1 < args['best_pred']
+    args['best_pred'] = min(prec1, args['best_pred'])
 
-        is_best = prec1 < args['best_pred']
-        args['best_pred'] = min(prec1, args['best_pred'])
-
-        save_checkpoint({
-            'epoch': epoch + 1,
-            'arch': args['pre'],
-            'state_dict': model.state_dict(),
-            'best_prec1': args['best_pred'],
-            'optimizer': optimizer.state_dict(),
-        }, visi, is_best, args['task_id'])
-        break
-
-
+    print('\nThe visualizations are provided in ', args['task_id'])
+    save_checkpoint({
+        'arch': args['pre'],
+        'state_dict': model.state_dict(),
+        'best_prec1': args['best_pred'],
+        'optimizer': optimizer.state_dict(),
+    }, visi, is_best, args['task_id'])
 
 
 def pre_data(train_list, args, train):
@@ -100,13 +93,12 @@ def pre_data(train_list, args, train):
         Img_path = train_list[j]
         fname = os.path.basename(Img_path)
         # print(fname)
-        img, rdt_map, kpoint, mask_map = load_data_rdt(Img_path, args, train)
+        img, fidt_map, kpoint = load_data_fidt(Img_path, args, train)
 
         blob = {}
         blob['img'] = img
         blob['kpoint'] = np.array(kpoint)
-        blob['rdt_map'] = rdt_map
-        blob['mask_map'] = mask_map
+        blob['fidt_map'] = fidt_map
         blob['fname'] = fname
         data_keys[count] = blob
         count += 1
@@ -138,30 +130,30 @@ def validate(Pre_data, model, args):
     if not os.path.exists('./local_eval/loc_file'):
         os.makedirs('./local_eval/loc_file')
 
+    '''output coordinates'''
     f_loc = open("./local_eval/A_localization.txt", "w+")
     f_count = open("./local_eval/A_counting.txt", "w+")
 
-    for i, (fname, img, rdt_map, kpoint , mask_map) in enumerate(test_loader):
+    for i, (fname, img, fidt_map, kpoint) in enumerate(test_loader):
 
         count = 0
         img = img.cuda()
 
         if len(img.shape) == 5:
             img = img.squeeze(0)
-        if len(rdt_map.shape) == 5:
-            rdt_map = rdt_map.squeeze(0)
+        if len(fidt_map.shape) == 5:
+            fidt_map = fidt_map.squeeze(0)
         if len(img.shape) == 3:
             img = img.unsqueeze(0)
-        if len(rdt_map.shape) == 3:
-            rdt_map = rdt_map.unsqueeze(0)
+        if len(fidt_map.shape) == 3:
+            fidt_map = fidt_map.unsqueeze(0)
 
         with torch.no_grad():
             d6 = model(img)[-1]
-            # d6 = resever_rdt_map(d6)
-            #count = find_maxima(d6)
-
-            # rdt_map = resever_rdt_map(rdt_map)
-        count, f, f_count = draw_pred_point(d6, i+1, f_loc, f_count)
+            '''only return counting'''
+            # count = LMDS_with_counting(d6)
+        '''return counting and coordinates'''
+        count, f, f_count = LMDS_with_coordinates(d6, i + 1, f_loc, f_count)
 
         gt_count = torch.sum(kpoint).item()
         mae += abs(gt_count - count)
@@ -170,10 +162,9 @@ def validate(Pre_data, model, args):
         if i % 1 == 0:
             print('{fname} Gt {gt:.2f} Pred {pred}'.format(fname=fname[0], gt=gt_count, pred=count))
             visi.append(
-                [img.data.cpu().numpy(), d6.data.cpu().numpy(), rdt_map.data.cpu().numpy(),
+                [img.data.cpu().numpy(), d6.data.cpu().numpy(), fidt_map.data.cpu().numpy(),
                  fname])
             index += 1
-
 
     mae = mae * 1.0 / (len(test_loader) * batch_size)
     mse = math.sqrt(mse / (len(test_loader)) * batch_size)
@@ -184,7 +175,7 @@ def validate(Pre_data, model, args):
     return mae, visi
 
 
-def resever_rdt_map(input_img):
+def resever_fidt_map(input_img):
     pre_0 = input_img[0]
     pre_1 = input_img[1]
     pre_2 = input_img[2]
@@ -193,12 +184,11 @@ def resever_rdt_map(input_img):
     pre_up = torch.cat([pre_0, pre_1], 2)
     pre_down = torch.cat([pre_2, pre_3], 2)
     input_img = torch.cat([pre_up, pre_down], 1).unsqueeze(0)
-    # print(input_img.shape, pre_0.shape,pre_up.shape)
-
     return input_img
 
 
-def draw_pred_point(input, fname, f_loc, f_count):
+
+def LMDS_with_coordinates(input, fname, f_loc, f_count):
     input_max = torch.max(input).item()
 
     rate = 1
@@ -225,7 +215,7 @@ def draw_pred_point(input, fname, f_loc, f_count):
 
     cv2.imwrite('1.jpg', point_map)
     f_loc.write('{} {} '.format(fname, count))
-    #f_loc.write('{} {} '.format(fname.split('.')[0].split('_')[1], count))
+    # f_loc.write('{} {} '.format(fname.split('.')[0].split('_')[1], count))
 
     for data in coord_list:
         f_loc.write('{} {} '.format(math.floor(data[0]), math.floor(data[1])))
@@ -240,7 +230,9 @@ def draw_pred_point(input, fname, f_loc, f_count):
     return count, f_loc, f_count
 
 
-def find_maxima(input, threshold=100):
+'''only return counting'''
+
+def LMDS_with_counting(input, threshold=100):
     input[input < 0] = 0
     keep = nn.functional.max_pool2d(input, (3, 3), stride=1, padding=1)
     keep = (keep == input).float()

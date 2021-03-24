@@ -9,11 +9,18 @@
 # Visualizations
 ![avatar](./image/fidtmap.png)
 
+# Bounding boxes
+![avatar](./image/bounding_boxes.png)
+
 # Progress
 - [x] Testing Code (2021.3.16)
 - [x] Pretrained model
   - [x] ShanghaiA  (2021.3.16)
   - [x] ShanghaiB  (2021.3.16)
+  - [x] NWPU-Crowd  (2021.3.24)
+  - [x] QNRF  (2021.3.24)
+  - [x] JHU-Crowd++  (2021.3.24)
+- Bounding boxes visualizations(2021.3.24)
 
 # Environment
 
@@ -65,6 +72,13 @@ Test example:
 python test.py --test_dataset ShanghaiA --pre ./model/ShanghaiA/model_best.pth --gpu_id 0
 python test.py --test_dataset ShanghaiB --pre ./model/ShanghaiB/model_best.pth --gpu_id 0
 ```
+If you want to generate bounding boxes,
+```
+python test.py --test_dataset ShanghaiA --pre model_best.pth  --visual True
+(remember to change the dataset path in test.py)
+```
+
+
 More config information is provided in config.py
 # Evaluation localization performance
 ```

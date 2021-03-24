@@ -132,7 +132,6 @@ def validate(Pre_data, model, args):
 
     '''output coordinates'''
     f_loc = open("./local_eval/A_localization.txt", "w+")
-    f_count = open("./local_eval/A_counting.txt", "w+")
 
     for i, (fname, img, fidt_map, kpoint) in enumerate(test_loader):
 
@@ -149,11 +148,21 @@ def validate(Pre_data, model, args):
             fidt_map = fidt_map.unsqueeze(0)
 
         with torch.no_grad():
-            d6 = model(img)[-1]
-            '''only return counting'''
-            # count = LMDS_with_counting(d6)
-        '''return counting and coordinates'''
-        count, f, f_count = LMDS_with_coordinates(d6, i + 1, f_loc, f_count)
+            d6 = model(img)
+
+            '''return counting and coordinates'''
+            count, pred_kpoint, f_loc = counting(d6, i + 1, f_loc, fname)
+            point_map = generate_point_map(pred_kpoint, f_loc, rate=1)
+
+            if args['visual'] == True:
+                if not os.path.exists(args['task_id'] + '_box/'):
+                    os.makedirs(args['task_id'] + '_box/')
+                ori_img, box_img = generate_bounding_boxes(pred_kpoint, fname)
+                show_fidt = show_map(d6.data.cpu().numpy())
+                gt_show = show_map(fidt_map.data.cpu().numpy())
+                res = np.hstack((ori_img, gt_show, show_fidt, point_map, box_img))
+                cv2.imwrite(args['task_id'] + '_box/' + fname[0], res)
+
 
         gt_count = torch.sum(kpoint).item()
         mae += abs(gt_count - count)
@@ -187,11 +196,7 @@ def resever_fidt_map(input_img):
     return input_img
 
 
-
-def LMDS_with_coordinates(input, fname, f_loc, f_count):
-    input_max = torch.max(input).item()
-
-    rate = 1
+def counting(input, w_fname, f_loc, fname):
     keep = nn.functional.max_pool2d(input, (3, 3), stride=1, padding=1)
     keep = (keep == input).float()
     input = keep * input
@@ -200,34 +205,10 @@ def LMDS_with_coordinates(input, fname, f_loc, f_count):
     input[input > 0] = 1
     count = int(torch.sum(input).item())
 
-    pred_kpoint = input.data.squeeze(0).squeeze(0).cpu().numpy()
-    pred_coor = np.nonzero(pred_kpoint)
+    kpoint = input.data.squeeze(0).squeeze(0).cpu().numpy()
 
-    point_map = np.zeros((int(input.shape[2] * rate), int(input.shape[3] * rate), 3), dtype="uint8") + 255  # 22
-    # count = len(pred_coor[0])
-    coord_list = []
-    for i in range(0, len(pred_coor[0])):
-        h = int(pred_coor[0][i] * rate)
-        w = int(pred_coor[1][i] * rate)
-        coord_list.append([w, h])
-
-        cv2.circle(point_map, (w, h), 2, (0, 255, 0))
-
-    cv2.imwrite('1.jpg', point_map)
-    f_loc.write('{} {} '.format(fname, count))
-    # f_loc.write('{} {} '.format(fname.split('.')[0].split('_')[1], count))
-
-    for data in coord_list:
-        f_loc.write('{} {} '.format(math.floor(data[0]), math.floor(data[1])))
-    f_loc.write('\n')
-
-    count_value = (fname, count)
-    s_count = str(count_value).strip('(').strip(')').replace(',', ' ').strip('\'').replace('\'  ', ' ').replace(']])',
-                                                                                                                '')
-    f_count.write(s_count)
-    f_count.write('\n')
-
-    return count, f_loc, f_count
+    f_loc.write('{} {} '.format(w_fname, count))
+    return count, kpoint, f_loc
 
 
 '''only return counting'''
@@ -244,6 +225,82 @@ def LMDS_with_counting(input, threshold=100):
     count = torch.sum(input).item()
 
     return count
+
+
+def LMDS_counting(input, w_fname, f_loc, fname):
+    keep = nn.functional.max_pool2d(input, (3, 3), stride=1, padding=1)
+    keep = (keep == input).float()
+    input = keep * input
+
+    input[input < 100.0 / 255.0 * torch.max(input)] = 0
+    input[input > 0] = 1
+    count = int(torch.sum(input).item())
+
+    kpoint = input.data.squeeze(0).squeeze(0).cpu().numpy()
+
+    f_loc.write('{} {} '.format(w_fname, count))
+    return count, kpoint, f_loc
+
+
+def generate_point_map(kpoint, f_loc, rate = 1):
+    pred_coor = np.nonzero(kpoint)
+    point_map = np.zeros((int(kpoint.shape[0] * rate), int(kpoint.shape[1] * rate), 3), dtype="uint8") + 255  # 22
+    # count = len(pred_coor[0])
+    coord_list = []
+    for i in range(0, len(pred_coor[0])):
+        h = int(pred_coor[0][i] * rate)
+        w = int(pred_coor[1][i] * rate)
+        coord_list.append([w, h])
+        cv2.circle(point_map, (w, h), 2, (0, 0, 0), -1)
+
+    for data in coord_list:
+        f_loc.write('{} {} '.format(math.floor(data[0]), math.floor(data[1])))
+    f_loc.write('\n')
+
+    return  point_map
+
+
+def generate_bounding_boxes(kpoint, fname):
+    Img_data = cv2.imread(
+        '/home/dkliang/projects/synchronous/dataset/ShanghaiTech/part_A_final/test_data/images/' + fname[0])
+    ori_Img_data = Img_data.copy()
+
+    '''generate sigma'''
+    pts = np.array(list(zip(np.nonzero(kpoint)[1], np.nonzero(kpoint)[0])))
+    leafsize = 2048
+    # build kdtree
+    tree = scipy.spatial.KDTree(pts.copy(), leafsize=leafsize)
+
+    distances, locations = tree.query(pts, k=4)
+    for index, pt in enumerate(pts):
+        pt2d = np.zeros(kpoint.shape, dtype=np.float32)
+        pt2d[pt[1], pt[0]] = 1.
+        if np.sum(kpoint) > 1:
+            sigma = (distances[index][1] + distances[index][2] + distances[index][3]) * 0.1
+        else:
+            sigma = np.average(np.array(kpoint.shape)) / 2. / 2.  # case: 1 point
+        sigma = min(sigma, min(Img_data.shape[0], Img_data.shape[1]) * 0.04)
+
+        if sigma < 6:
+            t = 2
+        else:
+            t = 2
+        Img_data = cv2.rectangle(Img_data, (int(pt[0] - sigma), int(pt[1] - sigma)),
+                                 (int(pt[0] + sigma), int(pt[1] + sigma)), (0, 255, 0), t)
+
+    return ori_Img_data, Img_data
+
+
+
+def show_map(input):
+    input[input<0] = 0
+    input = input[0][0]
+    fidt_map1 = input
+    fidt_map1 = fidt_map1 / np.max(fidt_map1) * 255
+    fidt_map1 = fidt_map1.astype(np.uint8)
+    fidt_map1 = cv2.applyColorMap(fidt_map1, 2)
+    return fidt_map1
+
 
 
 class AverageMeter(object):

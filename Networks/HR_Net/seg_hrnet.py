@@ -464,7 +464,7 @@ class HighResolutionNet(nn.Module):
         x = crop(x, gt)
         #print(x.shape)
 
-        return f, x
+        return x
 
     def init_weights(self, pretrained='',):
         logger.info('=> init weights from normal distribution')

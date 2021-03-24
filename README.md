@@ -9,8 +9,6 @@
 # Visualizations
 ![avatar](./image/fidtmap.png)
 
-# Bounding boxes
-![avatar](./image/bounding_boxes.png)
 
 # Progress
 - [x] Testing Code (2021.3.16)

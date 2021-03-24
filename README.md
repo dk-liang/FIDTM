@@ -15,9 +15,6 @@
 - [x] Pretrained model
   - [x] ShanghaiA  (2021.3.16)
   - [x] ShanghaiB  (2021.3.16)
-  - [x] NWPU-Crowd  (2021.3.24)
-  - [x] QNRF  (2021.3.24)
-  - [x] JHU-Crowd++  (2021.3.24)
 - Bounding boxes visualizations(2021.3.24)
 
 # Environment

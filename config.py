@@ -36,6 +36,8 @@ parser.add_argument('--lr', type=str, default='1e-4',
                     help='learning rate')
 parser.add_argument('--preload_data', type=bool, default=True,
                     help='preload data. ')
+parser.add_argument('--visual', type=bool, default=False,
+                    help='visual for bounding box. ')
 
 args = parser.parse_args()
 return_args = parser.parse_args()

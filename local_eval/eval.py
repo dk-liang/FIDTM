@@ -53,7 +53,7 @@ def main():
 
     pred_data, gt_data = read_pred_and_gt(pred_file, gt_file)
     for i_sample in id_std:
-        #print(i_sample)
+        print(i_sample)
         # init               
         gt_p, pred_p, fn_gt_index, tp_pred_index, fp_pred_index = [], [], [], [], []
         tp_s, fp_s, fn_s, tp_l, fp_l, fn_l = [0, 0, 0, 0, 0, 0]

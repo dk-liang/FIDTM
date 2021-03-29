@@ -7,16 +7,16 @@
 ![avatar](./image/overview.png)
 
 # Visualizations
+Compared with density map
 ![avatar](./image/fidtmap.png)
-
 
 # Progress
 - [x] Testing Code (2021.3.16)
 - [x] Pretrained model
   - [x] ShanghaiA  (2021.3.16)
   - [x] ShanghaiB  (2021.3.16)
-- Bounding boxes visualizations(2021.3.24)
-
+- [x] Bounding boxes visualizations(2021.3.24)
+- [x] Video demo(2021.3.29)
 # Environment
 
 	python >=3.6 
@@ -73,6 +73,13 @@ python test.py --test_dataset ShanghaiA --pre model_best.pth  --visual True
 (remember to change the dataset path in test.py)
 ```
 
+If you want to test a video,
+```
+python video_demo.py --pre model_best.pth  --video_path demo.mp4
+(the output video will in ./demo.avi; By default, the video size is reduced by two times for inference. You can change the input size in the video_demo.py)
+```
+![avatar](./image/demo.jpeg)
+Visiting [bilibili](https://www.bilibili.com/video/BV17v41187fs?from=search&seid=12553003238808495181) to watch the video demonstration.
 
 More config information is provided in config.py
 # Evaluation localization performance

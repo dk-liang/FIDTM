@@ -39,5 +39,9 @@ parser.add_argument('--preload_data', type=bool, default=True,
 parser.add_argument('--visual', type=bool, default=False,
                     help='visual for bounding box. ')
 
+'''video demo'''
+parser.add_argument('--video_path', type=str, default=None,
+                    help='input video path ')
+
 args = parser.parse_args()
 return_args = parser.parse_args()

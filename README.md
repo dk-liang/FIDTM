@@ -10,6 +10,9 @@
 Compared with density map
 ![avatar](./image/fidtmap.png)
 
+Visualizations for bounding boxes
+![avatar](./image/bounding_boxes.jpeg)
+
 # Progress
 - [x] Testing Code (2021.3.16)
 - [x] Pretrained model
@@ -53,27 +56,23 @@ Download the pretrained model from [Baidu-Disk](https://pan.baidu.com/s/1SaPppYr
 ```
 git clone https://github.com/dk-liang/FIDTM.git
 ```
-
-Download Dataset and Model
-
-Generate FIDT map ground-truth
-	
+Download Dataset and Model  
+Generate FIDT map ground-truth  
 ```
-run python make_npydata.py
+Generate image file list: run python make_npydata.py
 ```
 
-Test example:
+**Test example:**
 ```
 python test.py --test_dataset ShanghaiA --pre ./model/ShanghaiA/model_best.pth --gpu_id 0
-python test.py --test_dataset ShanghaiB --pre ./model/ShanghaiB/model_best.pth --gpu_id 0
+python test.py --test_dataset ShanghaiB --pre ./model/ShanghaiB/model_best.pth --gpu_id 0  
 ```
-If you want to generate bounding boxes,
+**If you want to generate bounding boxes,**
 ```
 python test.py --test_dataset ShanghaiA --pre model_best.pth  --visual True
-(remember to change the dataset path in test.py)
+(remember to change the dataset path in test.py)  
 ```
-
-If you want to test a video,
+**If you want to test a video,**
 ```
 python video_demo.py --pre model_best.pth  --video_path demo.mp4
 (the output video will in ./demo.avi; By default, the video size is reduced by two times for inference. You can change the input size in the video_demo.py)

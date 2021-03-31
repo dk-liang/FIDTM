@@ -90,12 +90,18 @@ def main(args):
 
 
 def counting(input):
+    input_max = torch.max(input).item()
     keep = nn.functional.max_pool2d(input, (3, 3), stride=1, padding=1)
     keep = (keep == input).float()
     input = keep * input
 
     input[input < 100.0 / 255.0 * torch.max(input)] = 0
     input[input > 0] = 1
+
+    '''negative sample'''
+    if input_max<0.1:
+        input = input * 0
+
     count = int(torch.sum(input).item())
 
     kpoint = input.data.squeeze(0).squeeze(0).cpu().numpy()

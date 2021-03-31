@@ -151,7 +151,7 @@ def validate(Pre_data, model, args):
             d6 = model(img)
 
             '''return counting and coordinates'''
-            count, pred_kpoint, f_loc = counting(d6, i + 1, f_loc, fname)
+            count, pred_kpoint, f_loc = LMDS_counting(d6, i + 1, f_loc, fname)
             point_map = generate_point_map(pred_kpoint, f_loc, rate=1)
 
             if args['visual'] == True:
@@ -162,7 +162,6 @@ def validate(Pre_data, model, args):
                 gt_show = show_map(fidt_map.data.cpu().numpy())
                 res = np.hstack((ori_img, gt_show, show_fidt, point_map, box_img))
                 cv2.imwrite(args['task_id'] + '_box/' + fname[0], res)
-
 
         gt_count = torch.sum(kpoint).item()
         mae += abs(gt_count - count)
@@ -196,44 +195,22 @@ def resever_fidt_map(input_img):
     return input_img
 
 
-def counting(input, w_fname, f_loc, fname):
-    keep = nn.functional.max_pool2d(input, (3, 3), stride=1, padding=1)
-    keep = (keep == input).float()
-    input = keep * input
-
-    input[input < 100.0 / 255.0 * torch.max(input)] = 0
-    input[input > 0] = 1
-    count = int(torch.sum(input).item())
-
-    kpoint = input.data.squeeze(0).squeeze(0).cpu().numpy()
-
-    f_loc.write('{} {} '.format(w_fname, count))
-    return count, kpoint, f_loc
-
-
-'''only return counting'''
-
-def LMDS_with_counting(input, threshold=100):
-    input[input < 0] = 0
-    keep = nn.functional.max_pool2d(input, (3, 3), stride=1, padding=1)
-    keep = (keep == input).float()
-    input = keep * input
-
-    input[input < threshold / 255.0 * torch.max(input)] = 0
-    input[input > 0] = 1
-
-    count = torch.sum(input).item()
-
-    return count
-
-
 def LMDS_counting(input, w_fname, f_loc, fname):
+    input_max = torch.max(input).item()
+
+    ''' find local maxima'''
     keep = nn.functional.max_pool2d(input, (3, 3), stride=1, padding=1)
     keep = (keep == input).float()
     input = keep * input
 
+    '''set the pixel valur of local maxima as 1 for counting'''
     input[input < 100.0 / 255.0 * torch.max(input)] = 0
     input[input > 0] = 1
+
+    ''' negative sample'''
+    if input_max < 0.1:
+        input = input * 0
+
     count = int(torch.sum(input).item())
 
     kpoint = input.data.squeeze(0).squeeze(0).cpu().numpy()
@@ -242,8 +219,10 @@ def LMDS_counting(input, w_fname, f_loc, fname):
     return count, kpoint, f_loc
 
 
-def generate_point_map(kpoint, f_loc, rate = 1):
+def generate_point_map(kpoint, f_loc, rate=1):
+    '''obtain the location coordinates'''
     pred_coor = np.nonzero(kpoint)
+
     point_map = np.zeros((int(kpoint.shape[0] * rate), int(kpoint.shape[1] * rate), 3), dtype="uint8") + 255  # 22
     # count = len(pred_coor[0])
     coord_list = []
@@ -257,10 +236,11 @@ def generate_point_map(kpoint, f_loc, rate = 1):
         f_loc.write('{} {} '.format(math.floor(data[0]), math.floor(data[1])))
     f_loc.write('\n')
 
-    return  point_map
+    return point_map
 
 
 def generate_bounding_boxes(kpoint, fname):
+    '''change the data path'''
     Img_data = cv2.imread(
         '/home/dkliang/projects/synchronous/dataset/ShanghaiTech/part_A_final/test_data/images/' + fname[0])
     ori_Img_data = Img_data.copy()
@@ -279,7 +259,7 @@ def generate_bounding_boxes(kpoint, fname):
             sigma = (distances[index][1] + distances[index][2] + distances[index][3]) * 0.1
         else:
             sigma = np.average(np.array(kpoint.shape)) / 2. / 2.  # case: 1 point
-        sigma = min(sigma, min(Img_data.shape[0], Img_data.shape[1]) * 0.04)
+        sigma = min(sigma, min(Img_data.shape[0], Img_data.shape[1]) * 0.05)
 
         if sigma < 6:
             t = 2
@@ -291,16 +271,14 @@ def generate_bounding_boxes(kpoint, fname):
     return ori_Img_data, Img_data
 
 
-
 def show_map(input):
-    input[input<0] = 0
+    input[input < 0] = 0
     input = input[0][0]
     fidt_map1 = input
     fidt_map1 = fidt_map1 / np.max(fidt_map1) * 255
     fidt_map1 = fidt_map1.astype(np.uint8)
     fidt_map1 = cv2.applyColorMap(fidt_map1, 2)
     return fidt_map1
-
 
 
 class AverageMeter(object):

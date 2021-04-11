@@ -49,7 +49,7 @@ run  python fidt_generate_xx.py
 
 # Model
 
-Download the pretrained model from [Baidu-Disk](https://pan.baidu.com/s/1SaPppYrkqdWeHueNlcvUJw), passward:gqqm or [Google-Drive](https://drive.google.com/drive/folders/1c-99hZaVaqIb7UV_8G0Dz4psuNncO5en?usp=sharing)
+Download the pretrained model from [Baidu-Disk](https://pan.baidu.com/s/1SaPppYrkqdWeHueNlcvUJw), passward:gqqm, or [OneDrive](https://1drv.ms/u/s!Ak_WZsh5Fl0lhCneubkIv1mTllAZ?e=0zMHSM)
 
 # Quickly test
 
@@ -96,7 +96,10 @@ We choose two thresholds (4, 8) for evaluation. The evaluation code is from [NWP
 # Training
 
 The official training code is coming soon. 
-Also, the training strategy is very simple. You can replace the density map with the FIDT map in any regressors for training.
+
+Also, the training strategy is very simple. You can replace the density map with the FIDT map in any regressors for training. 
+
+If you want to train based on the HRNET, please first download the ImageNet pre-trained HR models from the official [link](https://onedrive.live.com/?authkey=!AKvqI6pBZlifgJk&cid=F7FD0B7F26543CEB&id=F7FD0B7F26543CEB!116&parId=F7FD0B7F26543CEB!105&action=locate), and replace the pre-trained model path in HRNET/congfig.py (__C.PRE_HR_WEIGHTS).
 
 
 

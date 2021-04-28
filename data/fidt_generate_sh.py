@@ -51,7 +51,7 @@ for path in path_sets:
 img_paths.sort()
 
 
-def rdt_generate1(im_data, gt_data, lamda):
+def fidt_generate1(im_data, gt_data, lamda):
     size = im_data.shape
     new_im_data = cv2.resize(im_data, (lamda * size[1], lamda * size[0]), 0)
 
@@ -82,7 +82,7 @@ for img_path in img_paths:
     mat = io.loadmat(img_path.replace('.jpg', '.mat').replace('images', 'ground_truth').replace('IMG_', 'GT_IMG_'))
     Gt_data = mat["image_info"][0][0][0][0][0]
 
-    fidt_map1 = rdt_generate1(Img_data, Gt_data, 1)
+    fidt_map1 = fidt_generate1(Img_data, Gt_data, 1)
 
     kpoint = np.zeros((Img_data.shape[0], Img_data.shape[1]))
     for i in range(0, len(Gt_data)):

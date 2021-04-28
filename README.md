@@ -101,7 +101,16 @@ Also, the training strategy is very simple. You can replace the density map with
 
 If you want to train based on the HRNET, please first download the ImageNet pre-trained HR models from the official [link](https://onedrive.live.com/?authkey=!AKvqI6pBZlifgJk&cid=F7FD0B7F26543CEB&id=F7FD0B7F26543CEB!116&parId=F7FD0B7F26543CEB!105&action=locate), and replace the pre-trained model path in HRNET/congfig.py (__C.PRE_HR_WEIGHTS).
 
-
+# Reference
+If you find this project is useful for your research, please cite:
+```
+@article{liang2021focal,
+  title={Focal Inverse Distance Transform Maps for Crowd Localization and Counting in Dense Crowd},
+  author={Liang, Dingkang and Xu, Wei and Zhu, Yingying and Zhou, Yu},
+  journal={arXiv preprint arXiv:2102.07925},
+  year={2021}
+}
+```
 
 
 

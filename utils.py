@@ -21,6 +21,7 @@ def save_results(input_img, gt_data, density_map, output_dir, fname='results.png
     density_map = cv2.applyColorMap(density_map, 2)
 
     result_img = np.hstack((gt_data, density_map))
+
     cv2.imwrite(os.path.join('.', output_dir, fname).replace('.jpg', '.jpg'), result_img)
 
 
@@ -37,17 +38,17 @@ def load_net(fname, net):
             v.copy_(param)
 
 
-def save_checkpoint(state, visi, is_best, task_id, filename='checkpoint.pth'):
-    torch.save(state, './' + str(task_id) + '/' + filename)
+def save_checkpoint(state, visi, is_best, save_path, filename='checkpoint.pth'):
+    torch.save(state, './' + str(save_path) + '/' + filename)
     if is_best:
-        shutil.copyfile('./' + str(task_id) + '/' + filename, './' + str(task_id) + '/' + 'model_best.pth')
+        shutil.copyfile('./' + str(save_path) + '/' + filename, './' + str(save_path) + '/' + 'model_best.pth')
 
     for i in range(len(visi)):
         img = visi[i][0]
         output = visi[i][1]
         target = visi[i][2]
         fname = visi[i][3]
-        save_results(img, target, output, str(task_id), fname[0])
+        save_results(img, target, output, str(save_path), fname[0])
 
 
 def setup_seed(seed):

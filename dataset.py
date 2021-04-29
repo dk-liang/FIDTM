@@ -47,18 +47,6 @@ class listDataset(Dataset):
                 img = img.transpose(Image.FLIP_LEFT_RIGHT)
                 kpoint = np.fliplr(kpoint)
 
-            if random.random() > self.args['random_noise']:
-                proportion = random.uniform(0.004, 0.015)
-                width, height = img.size[0], img.size[1]
-                num = int(height * width * proportion)
-                for i in range(num):
-                    w = random.randint(0, width - 1)
-                    h = random.randint(0, height - 1)
-                    if random.randint(0, 1) == 0:
-                        img.putpixel((w, h), (0, 0, 0))
-                    else:
-                        img.putpixel((w, h), (255, 255, 255))
-                        
 
         fidt_map = fidt_map.copy()
         kpoint = kpoint.copy()
@@ -71,16 +59,14 @@ class listDataset(Dataset):
         if self.train == True:
             fidt_map = torch.from_numpy(fidt_map).cuda()
 
-            width = 256
-            height = 256
+            width = self.args['crop_size']
+            height = self.args['crop_size']
             # print(img.shape)
             crop_size_x = random.randint(0, img.shape[1] - width)
             crop_size_y = random.randint(0, img.shape[2] - height)
             img = img[:, crop_size_x: crop_size_x + width, crop_size_y:crop_size_y + height]
             kpoint = kpoint[crop_size_x: crop_size_x + width, crop_size_y:crop_size_y + height]
             fidt_map = fidt_map[crop_size_x: crop_size_x + width, crop_size_y:crop_size_y + height]
-
-
 
         return fname, img, fidt_map, kpoint
 

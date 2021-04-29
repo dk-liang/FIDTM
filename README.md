@@ -15,9 +15,12 @@ Visualizations for bounding boxes
 
 # Progress
 - [x] Testing Code (2021.3.16)
+- [x] Training baseline code (2021.4.29)
 - [x] Pretrained model
   - [x] ShanghaiA  (2021.3.16)
   - [x] ShanghaiB  (2021.3.16)
+  - [x] UCF_QNRF (2021.4.29)
+  - [x] JHU-Crowd++ (2021.4.29)
 - [x] Bounding boxes visualizations(2021.3.24)
 - [x] Video demo(2021.3.29)
 # Environment
@@ -64,8 +67,10 @@ Generate image file list: run python make_npydata.py
 
 **Test example:**
 ```
-python test.py --test_dataset ShanghaiA --pre ./model/ShanghaiA/model_best.pth --gpu_id 0
-python test.py --test_dataset ShanghaiB --pre ./model/ShanghaiB/model_best.pth --gpu_id 0  
+python test.py --dataset ShanghaiA --pre ./model/ShanghaiA/model_best.pth --gpu_id 0
+python test.py --dataset ShanghaiB --pre ./model/ShanghaiB/model_best.pth --gpu_id 1  
+python test.py --dataset UCF_QNRF --pre ./model/UCF_QNRF/model_best.pth --gpu_id 2  
+python test.py --dataset JHU --pre ./model/JHU/model_best.pth --gpu_id 3  
 ```
 **If you want to generate bounding boxes,**
 ```
@@ -78,7 +83,7 @@ python video_demo.py --pre model_best.pth  --video_path demo.mp4
 (the output video will in ./demo.avi; By default, the video size is reduced by two times for inference. You can change the input size in the video_demo.py)
 ```
 ![avatar](./image/demo.jpeg)
-Visiting [bilibili](https://www.bilibili.com/video/BV17v41187fs?from=search&seid=12553003238808495181) to watch the video demonstration.
+Visiting [bilibili](https://www.bilibili.com/video/BV17v41187fs?from=search&seid=12553003238808495181) or [Youtube](https://youtu.be/YdH6YpHywM4) to watch the video demonstration. 
 
 More config information is provided in config.py
 # Evaluation localization performance
@@ -90,16 +95,27 @@ Generate coordinates of Ground truth. (Remember to change the dataset path)
 python A_gt_generate.py 
 python eval.py
 ```
-We choose two thresholds (4, 8) for evaluation. The evaluation code is from [NWPU](https://github.com/gjy3035/NWPU-Crowd-Sample-Code)
+We choose two thresholds (4, 8) for evaluation. The evaluation code is from [NWPU](https://github.com/gjy3035/NWPU-Crowd-Sample-Code-for-Localization)
 
 
 # Training
 
-The official training code is coming soon. 
-
-Also, the training strategy is very simple. You can replace the density map with the FIDT map in any regressors for training. 
+The training strategy is very simple. You can replace the density map with the FIDT map in any regressors for training. 
 
 If you want to train based on the HRNET, please first download the ImageNet pre-trained HR models from the official [link](https://onedrive.live.com/?authkey=!AKvqI6pBZlifgJk&cid=F7FD0B7F26543CEB&id=F7FD0B7F26543CEB!116&parId=F7FD0B7F26543CEB!105&action=locate), and replace the pre-trained model path in HRNET/congfig.py (__C.PRE_HR_WEIGHTS).
+
+Here, we provide the training baseline code, the I-SSIM loss will released when the review completed.
+**Training baseline example:**
+
+```
+python train_baseline.py --dataset ShanghaiA --crop_size 256 --save_path ./save_file/ShanghaiA 
+python train_baseline.py --dataset ShanghaiB --crop_size 256 --save_path ./save_file/ShanghaiB  
+python train_baseline.py --dataset UCF_QNRF --crop_size 512 --save_path ./save_file/JHU
+python train_baseline.py --dataset JHU --crop_size 512 --save_path ./save_file/JHU
+```
+For ShanghaiTech, you can train by a GPU with 8 G memory. For other datasets, please utilize a single GPU with 24 G memory or multiple GPU for training .
+
+We have reorganized the code, which usually better than the results of the original [manuscript](https://arxiv.org/abs/2102.07925).
 
 # Reference
 If you find this project is useful for your research, please cite:

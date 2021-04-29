@@ -5,11 +5,14 @@ if not os.path.exists('./npydata'):
     os.makedirs('./npydata')
 
 '''please set your dataset path'''
+shanghai_root = '/home/dkliang/projects/synchronous/dataset/ShanghaiTech'
+jhu_root = '/home/dkliang/projects/synchronous/dataset/jhu_crowd_v2.0'
+qnrf_root = '/home/dkliang/projects/synchronous/dataset/UCF-QNRF_ECCV18'
 
 try:
 
-    shanghaiAtrain_path = '/home/dkliang/projects/synchronous/dataset/ShanghaiTech/part_A_final/train_data/images/'
-    shanghaiAtest_path = '/home/dkliang/projects/synchronous/dataset/ShanghaiTech/part_A_final/test_data/images/'
+    shanghaiAtrain_path = shanghai_root + '/part_A_final/train_data/images/'
+    shanghaiAtest_path = shanghai_root + '/part_A_final/test_data/images/'
 
     train_list = []
     for filename in os.listdir(shanghaiAtrain_path):
@@ -31,8 +34,8 @@ except:
     print("The ShanghaiA dataset path is wrong. Please check you path.")
 
 try:
-    shanghaiBtrain_path = '/home/dkliang/projects/synchronous/dataset/ShanghaiTech/part_B_final/train_data/images/'
-    shanghaiBtest_path = '/home/dkliang/projects/synchronous/dataset/ShanghaiTech/part_B_final/test_data/images/'
+    shanghaiBtrain_path = shanghai_root + '/part_B_final/train_data/images/'
+    shanghaiBtest_path = shanghai_root + '/part_B_final/test_data/images/'
 
     train_list = []
     for filename in os.listdir(shanghaiBtrain_path):
@@ -52,8 +55,8 @@ except:
     print("The ShanghaiB dataset path is wrong. Please check your path.")
 
 try:
-    Qnrf_train_path = '/home/dkliang/projects/synchronous/dataset/UCF-QNRF_ECCV18/train_data/images/'
-    Qnrf_test_path = '/home/dkliang/projects/synchronous/dataset/UCF-QNRF_ECCV18/test_data/images/'
+    Qnrf_train_path = qnrf_root + '/train_data/images/'
+    Qnrf_test_path = qnrf_root + '/test_data/images/'
 
     train_list = []
     for filename in os.listdir(Qnrf_train_path):
@@ -74,9 +77,9 @@ except:
 
 try:
 
-    Jhu_train_path = '/home/dkliang/projects/synchronous/jhu_crowd_v2.0/train/images_2048/'
-    Jhu_val_path = '/home/dkliang/projects/synchronous/jhu_crowd_v2.0/val/images_2048/'
-    jhu_test_path = '/home/dkliang/projects/synchronous/jhu_crowd_v2.0/test/images_2048/'
+    Jhu_train_path = jhu_root + '/train/images_2048/'
+    Jhu_val_path = jhu_root + '/val/images_2048/'
+    jhu_test_path = jhu_root + '/test/images_2048/'
 
     train_list = []
     for filename in os.listdir(Jhu_train_path):

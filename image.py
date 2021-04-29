@@ -18,7 +18,7 @@ def load_data_fidt(img_path, args, train=True):
             fidt_map = np.asarray(gt_file['fidt_map'])
             break
         except OSError:
-            print("path is wrong", img_path)
+            print("path is wrong, can not load ", img_path)
             cv2.waitKey(1000)  # Wait a bit
 
     img = img.copy()

@@ -15,9 +15,10 @@ import logging
 import nni
 from nni.utils import merge_parameter
 from config import return_args, args
+import time
 
 warnings.filterwarnings('ignore')
-
+'''fixed random seed '''
 setup_seed(args.seed)
 
 logger = logging.getLogger('mnist_AutoML')
@@ -25,28 +26,38 @@ logger = logging.getLogger('mnist_AutoML')
 
 def main(args):
     if args['dataset'] == 'ShanghaiA':
+        train_file = './npydata/ShanghaiA_train.npy'
         test_file = './npydata/ShanghaiA_test.npy'
     elif args['dataset'] == 'ShanghaiB':
+        train_file = './npydata/ShanghaiB_train.npy'
         test_file = './npydata/ShanghaiB_test.npy'
     elif args['dataset'] == 'UCF_QNRF':
+        train_file = './npydata/qnrf_train.npy'
         test_file = './npydata/qnrf_test.npy'
     elif args['dataset'] == 'JHU':
-        test_file = './npydata/jhu_test.npy'
+        train_file = './npydata/jhu_train.npy'
+        test_file = './npydata/jhu_val.npy'
     elif args['dataset'] == 'NWPU':
+        train_file = './npydata/nwpu_train.npy'
         test_file = './npydata/nwpu_val.npy'
 
+    with open(train_file, 'rb') as outfile:
+        train_list = np.load(outfile).tolist()
     with open(test_file, 'rb') as outfile:
-        val_list = np.load(outfile).tolist()
+        test_list = np.load(outfile).tolist()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args['gpu_id']
-    model = get_seg_model()
+    model = get_seg_model(train=True)
     model = nn.DataParallel(model, device_ids=[0])
     model = model.cuda()
 
     optimizer = torch.optim.Adam(
-        [
+        [  #
             {'params': model.parameters(), 'lr': args['lr']},
-        ])
+        ], lr=args['lr'], weight_decay=args['weight_decay'])
+
+    criterion = nn.MSELoss(size_average=False).cuda()
+
 
     print(args['pre'])
 
@@ -67,24 +78,37 @@ def main(args):
     print(args['best_pred'], args['start_epoch'])
 
     if args['preload_data'] == True:
-        test_data = pre_data(val_list, args, train=False)
+        train_data = pre_data(train_list, args, train=True)
+        test_data = pre_data(test_list, args, train=False)
     else:
-        test_data = val_list
+        train_data = train_list
+        test_data = test_list
 
-    '''inference '''
-    prec1, visi = validate(test_data, model, args)
 
-    is_best = prec1 < args['best_pred']
-    args['best_pred'] = min(prec1, args['best_pred'])
+    for epoch in range(args['start_epoch'], args['epochs']):
 
-    print('\nThe visualizations are provided in ', args['save_path'])
-    save_checkpoint({
-        'arch': args['pre'],
-        'state_dict': model.state_dict(),
-        'best_prec1': args['best_pred'],
-        'optimizer': optimizer.state_dict(),
-    }, visi, is_best, args['save_path'])
+        start = time.time()
+        train(train_data, model, criterion, optimizer, epoch, args)
+        end1 = time.time()
 
+        '''inference '''
+        if epoch % 10 == 0 and epoch >= 200:
+            prec1, visi = validate(test_data, model, args)
+
+            end2 = time.time()
+
+            is_best = prec1 < args['best_pred']
+            args['best_pred'] = min(prec1, args['best_pred'])
+
+            print(' * best MAE {mae:.3f} '.format(mae=args['best_pred']), args['save_path'], end1 - start, end2 - end1)
+
+            save_checkpoint({
+                'epoch': epoch + 1,
+                'arch': args['pre'],
+                'state_dict': model.state_dict(),
+                'best_prec1': args['best_pred'],
+                'optimizer': optimizer.state_dict(),
+            }, visi, is_best, args['save_path'])
 
 def pre_data(train_list, args, train):
     print("Pre_load dataset ......")
@@ -96,6 +120,10 @@ def pre_data(train_list, args, train):
         # print(fname)
         img, fidt_map, kpoint = load_data_fidt(Img_path, args, train)
 
+        if min(fidt_map.shape[0], fidt_map.shape[1]) < 256 and train == True:
+            # ignore some small resolution images
+            continue
+        # print(img.size, fidt_map.shape)
         blob = {}
         blob['img'] = img
         blob['kpoint'] = np.array(kpoint)
@@ -105,6 +133,66 @@ def pre_data(train_list, args, train):
         count += 1
 
     return data_keys
+
+
+def train(Pre_data, model, criterion, optimizer, epoch, args):
+    losses = AverageMeter()
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+
+    train_loader = torch.utils.data.DataLoader(
+        dataset.listDataset(Pre_data, args['save_path'],
+                            shuffle=True,
+                            transform=transforms.Compose([
+                                transforms.ToTensor(),
+
+                                transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                     std=[0.229, 0.224, 0.225]),
+                            ]),
+                            train=True,
+                            batch_size=args['batch_size'],
+                            num_workers=args['workers'],
+                            args=args),
+        batch_size=args['batch_size'], drop_last=False)
+    args['lr'] = optimizer.param_groups[0]['lr']
+    print('epoch %d, processed %d samples, lr %.10f' % (epoch, epoch * len(train_loader.dataset), args['lr']))
+
+    model.train()
+    end = time.time()
+
+
+    for i, (fname, img, fidt_map, kpoint) in enumerate(train_loader):
+
+        data_time.update(time.time() - end)
+        img = img.cuda()
+
+        fidt_map = fidt_map.type(torch.FloatTensor).unsqueeze(1).cuda()
+
+        d6 = model(img)
+
+        if d6.shape != fidt_map.shape:
+            print("the shape is wrong, please check. Both of prediction and GT should be [B, C, H, W].")
+            exit()
+        loss = criterion(d6, fidt_map)
+
+        losses.update(loss.item(), img.size(0))
+        
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        if i % args['print_freq'] == 0:
+            print('4_Epoch: [{0}][{1}/{2}]\t'
+                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                  'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                .format(
+                epoch, i, len(train_loader), batch_time=batch_time,
+                data_time=data_time, loss=losses))
+
 
 
 def validate(Pre_data, model, args):
@@ -168,7 +256,7 @@ def validate(Pre_data, model, args):
         mae += abs(gt_count - count)
         mse += abs(gt_count - count) * abs(gt_count - count)
 
-        if i % 1 == 0:
+        if i % 15 == 0:
             print('{fname} Gt {gt:.2f} Pred {pred}'.format(fname=fname[0], gt=gt_count, pred=count))
             visi.append(
                 [img.data.cpu().numpy(), d6.data.cpu().numpy(), fidt_map.data.cpu().numpy(),
@@ -188,8 +276,8 @@ def LMDS_counting(input, w_fname, f_loc, args):
     input_max = torch.max(input).item()
 
     ''' find local maxima'''
-    if args['dataset'] == 'UCF_QNRF':
-        #input = nn.functional.avg_pool2d(input, (3, 3), stride=1, padding=1)
+    if args['dataset'] == 'UCF_QNRF' :
+        input = nn.functional.avg_pool2d(input, (3, 3), stride=1, padding=1)
         keep = nn.functional.max_pool2d(input, (3, 3), stride=1, padding=1)
     else:
         keep = nn.functional.max_pool2d(input, (3, 3), stride=1, padding=1)
@@ -235,7 +323,7 @@ def generate_point_map(kpoint, f_loc, rate=1):
 def generate_bounding_boxes(kpoint, fname):
     '''change the data path'''
     Img_data = cv2.imread(
-        '/home/dkliang/projects/synchronous/dataset/ShanghaiTech/part_A_final/test_data/images/' + fname[0])
+        '/home/dkliang/projects/synchronous/datasets/ShanghaiTech/part_A_final/test_data/images/' + fname[0])
     ori_Img_data = Img_data.copy()
 
     '''generate sigma'''

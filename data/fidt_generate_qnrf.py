@@ -11,7 +11,7 @@ import math
 import torch
 
 '''please set the dataset path'''
-root = './UCF-QNRF_ECCV18'
+root = '/home/dkliang/projects/synchronous/dataset/UCF-QNRF_ECCV18'
 
 img_train_path = root + '/Train/'
 gt_train_path = root + '/Train/'

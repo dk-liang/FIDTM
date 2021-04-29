@@ -285,7 +285,7 @@ def LMDS_counting(input, w_fname, f_loc, args):
     input = keep * input
 
     '''set the pixel valur of local maxima as 1 for counting'''
-    input[input < 100.0 / 255.0 * torch.max(input)] = 0
+    input[input < 100.0 / 255.0 * input_max] = 0
     input[input > 0] = 1
 
     ''' negative sample'''

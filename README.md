@@ -104,7 +104,8 @@ The training strategy is very simple. You can replace the density map with the F
 
 If you want to train based on the HRNET, please first download the ImageNet pre-trained HR models from the official [link](https://onedrive.live.com/?authkey=!AKvqI6pBZlifgJk&cid=F7FD0B7F26543CEB&id=F7FD0B7F26543CEB!116&parId=F7FD0B7F26543CEB!105&action=locate), and replace the pre-trained model path in HRNET/congfig.py (__C.PRE_HR_WEIGHTS).
 
-Here, we provide the training baseline code, the I-SSIM loss will released when the review completed.
+Here, we provide the training baseline code, the I-SSIM loss will released when the review completed.  
+
 **Training baseline example:**
 
 ```

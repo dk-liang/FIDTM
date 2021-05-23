@@ -128,25 +128,27 @@ def generate_bounding_boxes(kpoint, Img_data):
     '''generate sigma'''
     pts = np.array(list(zip(np.nonzero(kpoint)[1], np.nonzero(kpoint)[0])))
     leafsize = 2048
-    # build kdtree
-    tree = scipy.spatial.KDTree(pts.copy(), leafsize=leafsize)
+        
+    if pts.shape[0] > 0: # Check if there is a human presents in the frame
+        # build kdtree
+        tree = scipy.spatial.KDTree(pts.copy(), leafsize=leafsize)
 
-    distances, locations = tree.query(pts, k=4)
-    for index, pt in enumerate(pts):
-        pt2d = np.zeros(kpoint.shape, dtype=np.float32)
-        pt2d[pt[1], pt[0]] = 1.
-        if np.sum(kpoint) > 1:
-            sigma = (distances[index][1] + distances[index][2] + distances[index][3]) * 0.1
-        else:
-            sigma = np.average(np.array(kpoint.shape)) / 2. / 2.  # case: 1 point
-        sigma = min(sigma, min(Img_data.shape[0], Img_data.shape[1]) * 0.04)
+        distances, locations = tree.query(pts, k=4)
+        for index, pt in enumerate(pts):
+            pt2d = np.zeros(kpoint.shape, dtype=np.float32)
+            pt2d[pt[1], pt[0]] = 1.
+            if np.sum(kpoint) > 1:
+                sigma = (distances[index][1] + distances[index][2] + distances[index][3]) * 0.1
+            else:
+                sigma = np.average(np.array(kpoint.shape)) / 2. / 2.  # case: 1 point
+            sigma = min(sigma, min(Img_data.shape[0], Img_data.shape[1]) * 0.04)
 
-        if sigma < 6:
-            t = 2
-        else:
-            t = 2
-        Img_data = cv2.rectangle(Img_data, (int(pt[0] - sigma), int(pt[1] - sigma)),
-                                 (int(pt[0] + sigma), int(pt[1] + sigma)), (0, 255, 0), t)
+            if sigma < 6:
+                t = 2
+            else:
+                t = 2
+            Img_data = cv2.rectangle(Img_data, (int(pt[0] - sigma), int(pt[1] - sigma)),
+                                    (int(pt[0] + sigma), int(pt[1] + sigma)), (0, 255, 0), t)
 
     return Img_data
 

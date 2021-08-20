@@ -105,11 +105,12 @@ More config information is provided in config.py
 | σ=4                   | 38.9% | 38.7% | 38.8% |
 | σ=8                   | 62.5% | 62.4% | 62.4% |
 
-| UCF_QNRF++ | Av.Precision | Av.Recall | Av. F1-measure |
+| UCF_QNRF | Av.Precision | Av.Recall | Av. F1-measure |
 | :-------------------- | :-------- | :----- | ---------- |
 | σ=1....100                   | 84.49% | 80.10% | 82.23% |
 
-**Evaluation example:**
+**Evaluation example:**  
+
 For Shanghai tech,  JHU-Crowd (test set), and NWPU-Crowd (val set):
 
 ```

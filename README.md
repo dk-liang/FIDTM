@@ -3,6 +3,9 @@
 * An officical implementation of Focal Inverse Distance Transform Map. We propose a novel map named Focal Inverse Distance Transform (FIDT) map,  which can represent each head location information.
 
 * Paper [Link](https://arxiv.org/abs/2102.07925)
+
+## News
+We now provide the predicted coordinates txt file, and other people can use it to fairly evaluate the localization performance.
 ## Overview
 ![avatar](./image/overview.png)
 
@@ -87,15 +90,57 @@ Visiting [bilibili](https://www.bilibili.com/video/BV17v41187fs?from=search&seid
 
 More config information is provided in config.py
 # Evaluation localization performance
+| Shanghai Teach Part A | Precision | Recall | F1-measure |
+| :-------------------- | :-------- | :----- | ---------- |
+| σ=4                   | 59.1%     | 58.2%  | 58.6%      |
+| σ=8                   | 78.1%     | 77.0%  | 77.6%      |
+
+| Shanghai Teach Part B | Precision | Recall | F1-measure |
+| :-------------------- | :-------- | :----- | ---------- |
+| σ=4                   | 64.9%     | 64.5%  | 64.7%      |
+| σ=8                   | 83.9%     | 83.2%  | 83.5%      |
+
+| JHU_Crowd++ (test set) | Precision | Recall | F1-measure |
+| :-------------------- | :-------- | :----- | ---------- |
+| σ=4                   | 38.9% | 38.7% | 38.8% |
+| σ=8                   | 62.5% | 62.4% | 62.4% |
+
+| UCF_QNRF++ | Av.Precision | Av.Recall | Av. F1-measure |
+| :-------------------- | :-------- | :----- | ---------- |
+| σ=1....100                   | 84.49% | 80.10% | 82.23% |
+
+**Evaluation example:**
+For Shanghai tech,  JHU-Crowd (test set), and NWPU-Crowd (val set):
+
 ```
-cd ./local_eval
+python eval.py ShanghaiA  
+python eval.py ShanghaiB
+python eval.py JHU  
+python eval.py NWPU
 ```
-Generate coordinates of Ground truth. (Remember to change the dataset path)
+For UCF-QNRF dataset:
 ```
-python A_gt_generate.py 
-python eval.py
+python eval_qnrf.py --data_path path/to/UCF-QNRF_ECCV18 
 ```
-We choose two thresholds (4, 8) for evaluation. The evaluation code is from [NWPU](https://github.com/gjy3035/NWPU-Crowd-Sample-Code-for-Localization)
+For NWPU-Crowd (test set), please submit the nwpu_pred_fidt.txt to the [website](https://www.crowdbenchmark.com/nwpucrowdloc.html).
+
+We also provide the predicted coordinates txt file in './local_eval/point_files/', and  you can use them to fairly evlauate the other localization metric.
+
+**Tips**:
+The GT format is:
+
+```
+1 x1 y1 4 8 x2 y2 4 8 ..... 
+2 x1 y1 4 8 x2 y2 4 8 .....
+```
+
+The predicted format is:
+```
+1 x1 y1 x2 y2.....
+2 x1 y1 x2 y2.....
+```
+
+The evaluation code is modifed from [NWPU](https://github.com/gjy3035/NWPU-Crowd-Sample-Code-for-Localization).
 
 
 # Training
@@ -114,9 +159,10 @@ python train_baseline.py --dataset ShanghaiB --crop_size 256 --save_path ./save_
 python train_baseline.py --dataset UCF_QNRF --crop_size 512 --save_path ./save_file/JHU
 python train_baseline.py --dataset JHU --crop_size 512 --save_path ./save_file/JHU
 ```
-For ShanghaiTech, you can train by a GPU with 8 G memory. For other datasets, please utilize a single GPU with 24 G memory or multiple GPU for training .
+For ShanghaiTech, you can train by a GPU with 8G memory. For other datasets, please utilize a single GPU with 24G memory or multiple GPU for training . We have reorganized the code, which usually better than the results of the original [manuscript](https://arxiv.org/abs/2102.07925).
 
-We have reorganized the code, which usually better than the results of the original [manuscript](https://arxiv.org/abs/2102.07925).
+**Improvements**
+We have not studied the effect of some super-parameters. Thus, the results can be further improved by some optimization skills, such as adjust the learning rate, batch size, crop size, and data augmentation. Besides, HRNET is a heavy network, and it is desirable to explore the efficient localization method based on FIDT maps.
 
 # Reference
 If you find this project is useful for your research, please cite:
@@ -128,6 +174,7 @@ If you find this project is useful for your research, please cite:
   year={2021}
 }
 ```
+
 
 
 

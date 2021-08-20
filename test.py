@@ -128,11 +128,11 @@ def validate(Pre_data, model, args):
     visi = []
     index = 0
 
-    if not os.path.exists('./local_eval/loc_file'):
-        os.makedirs('./local_eval/loc_file')
+    if not os.path.exists('./local_eval/point_files'):
+        os.makedirs('./local_eval/point_files')
 
     '''output coordinates'''
-    f_loc = open("./local_eval/A_localization.txt", "w+")
+    f_loc = open("./local_eval/point_files/A_localization.txt", "w+")
 
     for i, (fname, img, fidt_map, kpoint) in enumerate(test_loader):
 

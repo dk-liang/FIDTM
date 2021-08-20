@@ -8,7 +8,7 @@ import cv2
 from PIL import Image
 
 import sys
-
+sys.setrecursionlimit(20000)  #
 
 # Hungarian method for bipartite graph
 def hungarian(matrixTF):

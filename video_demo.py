@@ -74,7 +74,7 @@ def main(args):
             count, pred_kpoint = counting(d6)
             point_map = generate_point_map(pred_kpoint)
             box_img = generate_bounding_boxes(pred_kpoint, frame)
-            show_fidt = show_rdt(d6.data.cpu().numpy())
+            show_fidt = show_fidt(d6.data.cpu().numpy())
             #res = np.hstack((ori_img, show_fidt, point_map, box_img))
             res1 = np.hstack((ori_img, show_fidt))
             res2 = np.hstack((box_img, point_map))
@@ -153,14 +153,14 @@ def generate_bounding_boxes(kpoint, Img_data):
     return Img_data
 
 
-def show_rdt(input):
+def show_fidt(input):
     input[input < 0] = 0
     input = input[0][0]
-    rdt_map1 = input
-    rdt_map1 = rdt_map1 / np.max(rdt_map1) * 255
-    rdt_map1 = rdt_map1.astype(np.uint8)
-    rdt_map1 = cv2.applyColorMap(rdt_map1, 2)
-    return rdt_map1
+    fidt_map1 = input
+    fidt_map1 = fidt_map1 / np.max(fidt_map1) * 255
+    fidt_map1 = fidt_map1.astype(np.uint8)
+    fidt_map1 = cv2.applyColorMap(fidt_map1, 2)
+    return fidt_map1
 
 
 class AverageMeter(object):

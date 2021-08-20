@@ -5,7 +5,7 @@
 * Paper [Link](https://arxiv.org/abs/2102.07925)
 
 ## News
-We now provide the predicted coordinates txt file, and other people can use it to fairly evaluate the localization performance.
+We now provide the predicted coordinates txt files, and other researchers can use them to fairly evaluate the localization performance.
 ## Overview
 ![avatar](./image/overview.png)
 
@@ -24,8 +24,10 @@ Visualizations for bounding boxes
   - [x] ShanghaiB  (2021.3.16)
   - [x] UCF_QNRF (2021.4.29)
   - [x] JHU-Crowd++ (2021.4.29)
+  - [x] NWPU-Crowd++ (2021.4.29)
 - [x] Bounding boxes visualizations(2021.3.24)
 - [x] Video demo(2021.3.29)
+- [x] Predicted coordinates txt file(2021.8.20)
 # Environment
 
 	python >=3.6 
@@ -64,11 +66,13 @@ git clone https://github.com/dk-liang/FIDTM.git
 ```
 Download Dataset and Model  
 Generate FIDT map ground-truth  
+
 ```
-Generate image file list: run python make_npydata.py
+Generate image file list: python make_npydata.py
 ```
 
 **Test example:**
+
 ```
 python test.py --dataset ShanghaiA --pre ./model/ShanghaiA/model_best.pth --gpu_id 0
 python test.py --dataset ShanghaiB --pre ./model/ShanghaiB/model_best.pth --gpu_id 1  
@@ -76,11 +80,13 @@ python test.py --dataset UCF_QNRF --pre ./model/UCF_QNRF/model_best.pth --gpu_id
 python test.py --dataset JHU --pre ./model/JHU/model_best.pth --gpu_id 3  
 ```
 **If you want to generate bounding boxes,**
+
 ```
 python test.py --test_dataset ShanghaiA --pre model_best.pth  --visual True
 (remember to change the dataset path in test.py)  
 ```
 **If you want to test a video,**
+
 ```
 python video_demo.py --pre model_best.pth  --video_path demo.mp4
 (the output video will in ./demo.avi; By default, the video size is reduced by two times for inference. You can change the input size in the video_demo.py)
@@ -100,8 +106,8 @@ More config information is provided in config.py
 | σ=4                   | 64.9%     | 64.5%  | 64.7%      |
 | σ=8                   | 83.9%     | 83.2%  | 83.5%      |
 
-| JHU_Crowd++ (test set) | Precision | Recall | F1-measure |
-| :-------------------- | :-------- | :----- | ---------- |
+| JHU_Crowd++ <br />(test set) | Precision | Recall | F1-measure |
+| :-------------------: | :-------: | :----: | :--------: |
 | σ=4                   | 38.9% | 38.7% | 38.8% |
 | σ=8                   | 62.5% | 62.4% | 62.4% |
 
@@ -109,11 +115,18 @@ More config information is provided in config.py
 | :-------------------- | :-------- | :----- | ---------- |
 | σ=1....100                   | 84.49% | 80.10% | 82.23% |
 
+| NWPU-Crowd (val set) | Precision | Recall | F1-measure |
+| :-------------------- | :-------- | :----- | ---------- |
+| σ=σ_l               | 82.2% | 75.9% | 78.9% |
+| σ=σ_s | 76.7% | 70.9% | 73.7% |
+
+
 **Evaluation example:**  
 
 For Shanghai tech,  JHU-Crowd (test set), and NWPU-Crowd (val set):
 
 ```
+cd ./local_eval
 python eval.py ShanghaiA  
 python eval.py ShanghaiB
 python eval.py JHU  
@@ -125,7 +138,9 @@ python eval_qnrf.py --data_path path/to/UCF-QNRF_ECCV18
 ```
 For NWPU-Crowd (test set), please submit the nwpu_pred_fidt.txt to the [website](https://www.crowdbenchmark.com/nwpucrowdloc.html).
 
-We also provide the predicted coordinates txt file in './local_eval/point_files/', and  you can use them to fairly evlauate the other localization metric.
+We also provide the predicted coordinates txt file in './local_eval/point_files/', and you can use them to fairly evaluate the other localization metric.   
+
+ (We hope the community can provide the predicted coordinates file to help other researchers fairly evaluate the localization performance.)
 
 **Tips**:
 The GT format is:
@@ -134,13 +149,11 @@ The GT format is:
 1 x1 y1 4 8 x2 y2 4 8 ..... 
 2 x1 y1 4 8 x2 y2 4 8 .....
 ```
-
 The predicted format is:
 ```
 1 x1 y1 x2 y2.....
 2 x1 y1 x2 y2.....
 ```
-
 The evaluation code is modifed from [NWPU](https://github.com/gjy3035/NWPU-Crowd-Sample-Code-for-Localization).
 
 
@@ -148,22 +161,22 @@ The evaluation code is modifed from [NWPU](https://github.com/gjy3035/NWPU-Crowd
 
 The training strategy is very simple. You can replace the density map with the FIDT map in any regressors for training. 
 
-If you want to train based on the HRNET, please first download the ImageNet pre-trained HR models from the official [link](https://onedrive.live.com/?authkey=!AKvqI6pBZlifgJk&cid=F7FD0B7F26543CEB&id=F7FD0B7F26543CEB!116&parId=F7FD0B7F26543CEB!105&action=locate), and replace the pre-trained model path in HRNET/congfig.py (__C.PRE_HR_WEIGHTS).
+If you want to train based on the HRNET, please first download the ImageNet pre-trained models from the official [link](https://onedrive.live.com/?authkey=!AKvqI6pBZlifgJk&cid=F7FD0B7F26543CEB&id=F7FD0B7F26543CEB!116&parId=F7FD0B7F26543CEB!105&action=locate), and replace the pre-trained model path in HRNET/congfig.py (__C.PRE_HR_WEIGHTS). 
 
-Here, we provide the training baseline code, the I-SSIM loss will released when the review completed.  
+Here, we provide the training baseline code, and the I-SSIM loss will be released when the review is completed. 
 
 **Training baseline example:**
 
 ```
 python train_baseline.py --dataset ShanghaiA --crop_size 256 --save_path ./save_file/ShanghaiA 
 python train_baseline.py --dataset ShanghaiB --crop_size 256 --save_path ./save_file/ShanghaiB  
-python train_baseline.py --dataset UCF_QNRF --crop_size 512 --save_path ./save_file/JHU
+python train_baseline.py --dataset UCF_QNRF --crop_size 512 --save_path ./save_file/QNRF
 python train_baseline.py --dataset JHU --crop_size 512 --save_path ./save_file/JHU
 ```
-For ShanghaiTech, you can train by a GPU with 8G memory. For other datasets, please utilize a single GPU with 24G memory or multiple GPU for training . We have reorganized the code, which usually better than the results of the original [manuscript](https://arxiv.org/abs/2102.07925).
+For ShanghaiTech, you can train by a GPU with 8G memory. For other datasets, please utilize a single GPU with 24G memory or multiple GPU for training. We have reorganized the code, which is usually better than the results of the original [manuscript](https://arxiv.org/abs/2102.07925).
 
 **Improvements**
-We have not studied the effect of some super-parameters. Thus, the results can be further improved by some optimization skills, such as adjust the learning rate, batch size, crop size, and data augmentation. Besides, HRNET is a heavy network, and it is desirable to explore the efficient localization method based on FIDT maps.
+We have not studied the effect of some super-parameters. Thus, the results can be further improved by some tricks, such as adjust the learning rate, batch size, crop size, and data augmentation. 
 
 # Reference
 If you find this project is useful for your research, please cite:

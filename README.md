@@ -142,17 +142,17 @@ We also provide the predicted coordinates txt file in './local_eval/point_files/
 
  (We hope the community can provide the predicted coordinates file to help other researchers fairly evaluate the localization performance.)
 
-**Tips**:
+**Tips**:  
 The GT format is:
 
 ```
-1 x1 y1 4 8 x2 y2 4 8 ..... 
-2 x1 y1 4 8 x2 y2 4 8 .....
+1 total_count x1 y1 4 8 x2 y2 4 8 ..... 
+2 total_count x1 y1 4 8 x2 y2 4 8 .....
 ```
 The predicted format is:
 ```
-1 x1 y1 x2 y2.....
-2 x1 y1 x2 y2.....
+1 total_count x1 y1 x2 y2.....
+2 total_count x1 y1 x2 y2.....
 ```
 The evaluation code is modifed from [NWPU](https://github.com/gjy3035/NWPU-Crowd-Sample-Code-for-Localization).
 
@@ -176,7 +176,7 @@ python train_baseline.py --dataset JHU --crop_size 512 --save_path ./save_file/J
 For ShanghaiTech, you can train by a GPU with 8G memory. For other datasets, please utilize a single GPU with 24G memory or multiple GPU for training. We have reorganized the code, which is usually better than the results of the original [manuscript](https://arxiv.org/abs/2102.07925).
 
 **Improvements**
-We have not studied the effect of some super-parameters. Thus, the results can be further improved by some tricks, such as adjust the learning rate, batch size, crop size, and data augmentation. 
+We have not studied the effect of some hyper-parameter. Thus, the results can be further improved by using some tricks, such as adjust the learning rate, batch size, crop size, and data augmentation. 
 
 # Reference
 If you find this project is useful for your research, please cite:
@@ -188,7 +188,6 @@ If you find this project is useful for your research, please cite:
   year={2021}
 }
 ```
-
 
 
 

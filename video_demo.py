@@ -74,7 +74,7 @@ def main(args):
             count, pred_kpoint = counting(d6)
             point_map = generate_point_map(pred_kpoint)
             box_img = generate_bounding_boxes(pred_kpoint, frame)
-            show_fidt = show_fidt(d6.data.cpu().numpy())
+            show_fidt = show_fidt_func(d6.data.cpu().numpy())
             #res = np.hstack((ori_img, show_fidt, point_map, box_img))
             res1 = np.hstack((ori_img, show_fidt))
             res2 = np.hstack((box_img, point_map))
@@ -153,7 +153,7 @@ def generate_bounding_boxes(kpoint, Img_data):
     return Img_data
 
 
-def show_fidt(input):
+def show_fidt_func(input):
     input[input < 0] = 0
     input = input[0][0]
     fidt_map1 = input

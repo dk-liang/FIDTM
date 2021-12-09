@@ -92,7 +92,7 @@ python video_demo.py --pre model_best.pth  --video_path demo.mp4
 (the output video will in ./demo.avi; By default, the video size is reduced by two times for inference. You can change the input size in the video_demo.py)
 ```
 ![avatar](./image/demo.jpeg)
-Visiting [bilibili](https://www.bilibili.com/video/BV17v41187fs?from=search&seid=12553003238808495181) or [Youtube](https://youtu.be/YdH6YpHywM4) to watch the video demonstration. 
+Visiting [bilibili](https://www.bilibili.com/video/BV17v41187fs?from=search&seid=12553003238808495181) or [Youtube](https://youtu.be/YdH6YpHywM4) to watch the video demonstration. The original demo video can be downloaded from [Baidu-Disk](https://pan.baidu.com/s/1-PD2no_1VPBV-tEa7uLObA), passed: cebh
 
 More config information is provided in config.py
 # Evaluation localization performance
@@ -161,7 +161,7 @@ The evaluation code is modifed from [NWPU](https://github.com/gjy3035/NWPU-Crowd
 
 The training strategy is very simple. You can replace the density map with the FIDT map in any regressors for training. 
 
-If you want to train based on the HRNET, please first download the ImageNet pre-trained models from the official [link](https://onedrive.live.com/?authkey=!AKvqI6pBZlifgJk&cid=F7FD0B7F26543CEB&id=F7FD0B7F26543CEB!116&parId=F7FD0B7F26543CEB!105&action=locate), and replace the pre-trained model path in HRNET/congfig.py (__C.PRE_HR_WEIGHTS). 
+If you want to train based on the HRNET (borrow from the IIM-code [link](https://github.com/taohan10200/IIM/tree/main/model/HR_Net)), please first download the ImageNet pre-trained models from the official [link](https://onedrive.live.com/?authkey=!AKvqI6pBZlifgJk&cid=F7FD0B7F26543CEB&id=F7FD0B7F26543CEB!116&parId=F7FD0B7F26543CEB!105&action=locate), and replace the pre-trained model path in HRNET/congfig.py (__C.PRE_HR_WEIGHTS). 
 
 Here, we provide the training baseline code, and the I-SSIM loss will be released when the review is completed. 
 
@@ -188,6 +188,8 @@ If you find this project is useful for your research, please cite:
   year={2021}
 }
 ```
+
+
 
 
 

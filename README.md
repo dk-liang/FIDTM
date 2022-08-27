@@ -1,8 +1,9 @@
 
 # Focal Inverse Distance Transform Map
-* An officical implementation of Focal Inverse Distance Transform Map. We propose a novel map named Focal Inverse Distance Transform (FIDT) map,  which can represent each head location information.
+[[Project page](https://dk-liang.github.io/FIDTM/)] [[paper](https://arxiv.org/abs/2102.07925)]
+An officical implementation of "Focal Inverse Distance Transform Map for Crowd Localization" (Accepted by IEEE TMM). 
 
-* Paper [Link](https://arxiv.org/abs/2102.07925)
+We propose a novel label named Focal Inverse Distance Transform (FIDT) map,  which can represent each head location information.
 
 ## News
 We now provide the predicted coordinates txt files, and other researchers can use them to fairly evaluate the localization performance.
@@ -163,7 +164,7 @@ The training strategy is very simple. You can replace the density map with the F
 
 If you want to train based on the HRNET (borrow from the IIM-code [link](https://github.com/taohan10200/IIM/tree/main/model/HR_Net)), please first download the ImageNet pre-trained models from the official [link](https://onedrive.live.com/?authkey=!AKvqI6pBZlifgJk&cid=F7FD0B7F26543CEB&id=F7FD0B7F26543CEB!116&parId=F7FD0B7F26543CEB!105&action=locate), and replace the pre-trained model path in HRNET/congfig.py (__C.PRE_HR_WEIGHTS). 
 
-Here, we provide the training baseline code, and the I-SSIM loss will be released when the review is completed. 
+Here, we provide the training baseline code:
 
 **Training baseline example:**
 
@@ -173,7 +174,7 @@ python train_baseline.py --dataset ShanghaiB --crop_size 256 --save_path ./save_
 python train_baseline.py --dataset UCF_QNRF --crop_size 512 --save_path ./save_file/QNRF
 python train_baseline.py --dataset JHU --crop_size 512 --save_path ./save_file/JHU
 ```
-For ShanghaiTech, you can train by a GPU with 8G memory. For other datasets, please utilize a single GPU with 24G memory or multiple GPU for training. We have reorganized the code, which is usually better than the results of the original [manuscript](https://arxiv.org/abs/2102.07925).
+For ShanghaiTech, you can train by a GPU with 8G memory. For other datasets, please utilize a single GPU with 24G memory or multiple GPU for training. 
 
 **Improvements**
 We have not studied the effect of some hyper-parameter. Thus, the results can be further improved by using some tricks, such as adjust the learning rate, batch size, crop size, and data augmentation. 

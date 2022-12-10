@@ -181,11 +181,12 @@ We have not studied the effect of some hyper-parameter. Thus, the results can be
 # Reference
 If you find this project is useful for your research, please cite:
 ```
-@article{liang2021focal,
-  title={Focal Inverse Distance Transform Maps for Crowd Localization and Counting in Dense Crowd},
+@article{liang2022focal,
+  title={Focal inverse distance transform maps for crowd localization},
   author={Liang, Dingkang and Xu, Wei and Zhu, Yingying and Zhou, Yu},
-  journal={arXiv preprint arXiv:2102.07925},
-  year={2021}
+  journal={IEEE Transactions on Multimedia},
+  year={2022},
+  publisher={IEEE}
 }
 ```
 

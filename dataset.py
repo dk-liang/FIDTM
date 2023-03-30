@@ -43,9 +43,9 @@ class listDataset(Dataset):
         '''data augmention'''
         if self.train == True:
             if random.random() > 0.5:
-                fidt_map = np.fliplr(fidt_map)
+                fidt_map = np.ascontiguousarray(np.fliplr(fidt_map))
                 img = img.transpose(Image.FLIP_LEFT_RIGHT)
-                kpoint = np.fliplr(kpoint)
+                kpoint = np.ascontiguousarray(np.fliplr(kpoint))
 
 
         fidt_map = fidt_map.copy()
@@ -61,6 +61,13 @@ class listDataset(Dataset):
 
             width = self.args['crop_size']
             height = self.args['crop_size']
+            
+            pad_y = max(0, width - img.shape[1])
+            pad_x = max(0, height - img.shape[2])
+            if pad_y + pad_x > 0:
+                img = F.pad(img, [0, pad_x, 0, pad_y], value=0)
+                fidt_map = F.pad(fidt_map, [0, pad_x, 0, pad_y], value=0)
+                kpoint = np.pad(kpoint, [(0, pad_y), (0, pad_x)], mode='constant', constant_values=0)
             # print(img.shape)
             crop_size_x = random.randint(0, img.shape[1] - width)
             crop_size_y = random.randint(0, img.shape[2] - height)
